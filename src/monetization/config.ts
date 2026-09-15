@@ -60,6 +60,6 @@ export const rewardedAdUnitId = adUnit(
   TEST_REWARDED_ANDROID,
 );
 
-export const SUPPORT_EMAIL = 'support@altixcode.com';
-export const PRIVACY_POLICY_URL = 'https://altixcode.com/memoflip/privacy';
-export const TERMS_URL = 'https://altixcode.com/memoflip/terms';
+export const SUPPORT_EMAIL = 'info@altixcode.com';
+export const PRIVACY_POLICY_URL = 'https://altixcode.com/legal/app-privacy';
+export const TERMS_URL = 'https://altixcode.com/legal/terms';
