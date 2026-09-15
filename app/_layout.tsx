@@ -10,6 +10,7 @@ import { isRTLLanguage, t } from '@/i18n';
 import { bootstrapAds } from '@/monetization/ads';
 import { shouldShowAds } from '@/monetization/entitlements';
 import { preloadInterstitial } from '@/monetization/interstitial';
+import { useGameStore } from "@/store/useGameStore";
 import { usePremiumStore } from '@/store/usePremiumStore';
 import { ThemeProvider, useTheme } from '@/theme';
 
@@ -26,11 +27,14 @@ function RootNavigator() {
   const isPremium = usePremiumStore((s) => s.isPremium);
   const isReady = usePremiumStore((s) => s.isReady);
   const initialize = usePremiumStore((s) => s.initialize);
+  const hydrateGame = useGameStore((s) => s.hydrate);
 
   useEffect(() => {
     void initialize();
+    // Restores best times, the results history and the last deck and size chosen.
+    void hydrateGame();
     void SplashScreen.hideAsync();
-  }, [initialize]);
+  }, [initialize, hydrateGame]);
 
   useEffect(() => {
     // Ads bootstrap (and the iOS tracking prompt) is deferred until we know the user is not
@@ -54,6 +58,7 @@ function RootNavigator() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ title: t('settingsTitle') }} />
+        <Stack.Screen name="results" options={{ title: t("resultsTitle") }} />
         <Stack.Screen
           name="paywall"
           options={{ title: '', presentation: 'modal', headerShown: false }}

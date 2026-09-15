@@ -1,0 +1,178 @@
+/**
+ * The symbol decks.
+ *
+ * Symbols are emoji rather than images: they need no asset pipeline, they scale to any card
+ * size, and they render in both themes without a palette. Each deck holds at least 32 symbols
+ * so even the 8×8 board (32 pairs) gets a full set of distinct cards.
+ *
+ * `shapes` is free. The rest are what the paywall means by "every deck pack", and the gate is
+ * in `useGameStore`, not here — this module only says what exists.
+ */
+
+export interface Deck {
+  id: string;
+  /** i18n key for the deck's name. The symbols themselves need no translation. */
+  nameKey: string;
+  symbols: string[];
+}
+
+export const DECKS: Deck[] = [
+  {
+    id: "shapes",
+    nameKey: "deckShapes",
+    symbols: [
+      "●",
+      "■",
+      "▲",
+      "◆",
+      "★",
+      "✚",
+      "♥",
+      "♠",
+      "♣",
+      "♦",
+      "☀",
+      "☂",
+      "☘",
+      "⚑",
+      "⚓",
+      "⚡",
+      "✈",
+      "✿",
+      "❄",
+      "❖",
+      "⬟",
+      "⬢",
+      "◐",
+      "◑",
+      "◒",
+      "◓",
+      "◤",
+      "◥",
+      "◣",
+      "◢",
+      "⬧",
+      "⬨",
+    ],
+  },
+  {
+    id: "animals",
+    nameKey: "deckAnimals",
+    symbols: [
+      "🐶",
+      "🐱",
+      "🐭",
+      "🐹",
+      "🐰",
+      "🦊",
+      "🐻",
+      "🐼",
+      "🐨",
+      "🐯",
+      "🦁",
+      "🐮",
+      "🐷",
+      "🐸",
+      "🐵",
+      "🐔",
+      "🐧",
+      "🐦",
+      "🦆",
+      "🦉",
+      "🦇",
+      "🐺",
+      "🐗",
+      "🐴",
+      "🦄",
+      "🐝",
+      "🐞",
+      "🦋",
+      "🐢",
+      "🐍",
+      "🐙",
+      "🦀",
+    ],
+  },
+  {
+    id: "food",
+    nameKey: "deckFood",
+    symbols: [
+      "🍎",
+      "🍐",
+      "🍊",
+      "🍋",
+      "🍌",
+      "🍉",
+      "🍇",
+      "🍓",
+      "🫐",
+      "🍒",
+      "🍑",
+      "🥭",
+      "🍍",
+      "🥥",
+      "🥝",
+      "🍅",
+      "🥑",
+      "🥦",
+      "🥕",
+      "🌽",
+      "🥔",
+      "🍞",
+      "🧀",
+      "🥨",
+      "🍕",
+      "🌮",
+      "🍣",
+      "🍜",
+      "🍩",
+      "🍪",
+      "🎂",
+      "🍫",
+    ],
+  },
+  {
+    id: "travel",
+    nameKey: "deckTravel",
+    symbols: [
+      "🚗",
+      "🚕",
+      "🚌",
+      "🚑",
+      "🚒",
+      "🚜",
+      "🛵",
+      "🚲",
+      "🛴",
+      "🚂",
+      "✈️",
+      "🚁",
+      "🚀",
+      "🛸",
+      "⛵",
+      "🚤",
+      "🛳",
+      "⚓",
+      "🗽",
+      "🗼",
+      "🏰",
+      "🏯",
+      "⛩",
+      "🕌",
+      "🏝",
+      "🏔",
+      "🌋",
+      "🏜",
+      "🌉",
+      "🎡",
+      "🎢",
+      "🗺",
+    ],
+  },
+];
+
+export const FREE_DECK = "shapes";
+
+export function deckById(id: string): Deck {
+  return DECKS.find((d) => d.id === id) ?? DECKS[0]!;
+}
