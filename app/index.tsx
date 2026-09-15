@@ -240,7 +240,6 @@ export default function Home() {
                   backgroundColor: colors.surfaceAlt,
                   borderWidth: size === option ? 2 : 1,
                   borderColor: size === option ? colors.accent : colors.border,
-                  opacity: locked ? 0.6 : 1,
                 }}
               >
                 <Text variant="caption">{option}</Text>
@@ -276,7 +275,6 @@ export default function Home() {
                   borderWidth: deck === option.id ? 2 : 1,
                   borderColor:
                     deck === option.id ? colors.accent : colors.border,
-                  opacity: locked ? 0.6 : 1,
                 }}
               >
                 <Text variant="caption">{`${option.symbols[0]}  ${name}`}</Text>
