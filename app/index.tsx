@@ -111,7 +111,10 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Screen scroll>
+      {/* topInset, because this route sets headerShown:false -- with no
+          navigation header above it, nothing else pays the notch, and the
+          title renders underneath the status bar. */}
+      <Screen scroll topInset>
         <View style={styles.titleRow}>
           <View style={{ flex: 1 }}>
             <Text variant="display">{t("appName")}</Text>
