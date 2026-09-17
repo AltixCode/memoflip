@@ -37,7 +37,7 @@ function formatMs(ms: number): string {
 export default function Home() {
   const router = useRouter();
   const { colors, spacing, radius } = useTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   const isPremium = usePremiumStore((s) => s.isPremium);
   const game = useGameStore((s) => s.game);
@@ -105,7 +105,12 @@ export default function Home() {
   const columns = game ? columnsFor(game.size) : 4;
   const board = game?.board ?? [];
   const gap = spacing.xs;
-  const boardWidth = Math.min(width - spacing.xl * 2, 480);
+  // 480 was the board on every device, so on a 13" iPad the grid this game is
+  // made of sat at under half the width with the rest of the display empty. The
+  // height term keeps a square board from crowding the stats row out on a short
+  // window now that the cap is larger.
+  const isTablet = width >= 700;
+  const boardWidth = Math.min(width - spacing.xl * 2, height * 0.55, isTablet ? 720 : 480);
   const cell = (boardWidth - gap * (columns - 1)) / columns;
   const bestForCurrent = bests[`${deck}:${size}`];
 
