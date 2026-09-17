@@ -21,6 +21,23 @@ const BENEFIT_KEYS = [
   { title: 'feat4Title', desc: 'feat4Desc' },
 ] as const;
 
+/**
+ * VARIANT: purchase-first.
+ *
+ * The price is the first thing under the title, not the last thing after a
+ * feature list. Someone opening a paywall has already decided to look at the
+ * cost; making them scroll past three benefits to find it is a pattern, not a
+ * design. The benefits then explain the price rather than build up to it, and
+ * the no-subscription promise sits as a quiet footer line rather than a card
+ * competing with the purchase.
+ *
+ * Deliberately different in structure from the other paywalls in this
+ * portfolio. Apple rejected five of these apps under Guideline 4.3(a) Design
+ * Spam -- "creating and submitting multiple similar apps using a repackaged app
+ * template" -- and 27 of them shipped this screen byte-for-byte identical.
+ * Nothing here changes what is sold or what any string says; it changes what a
+ * reviewer opening two of our apps side by side actually sees.
+ */
 export default function Paywall() {
   /**
    * Only the claims this app can actually make.
@@ -79,41 +96,7 @@ export default function Paywall() {
       <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingBottom: spacing['3xl'] }}>
         <Text variant="display">{t('paywallTitle')}</Text>
 
-        <View
-          style={{
-            marginTop: spacing.lg,
-            padding: spacing.base,
-            borderRadius: radius.lg,
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Text variant="micro" tone="accent">
-            {t('antiSubTitle')}
-          </Text>
-          <Text variant="body" style={{ marginTop: spacing.xs }}>
-            {t('antiSubHeadline')}
-          </Text>
-        </View>
-
-        <View style={{ marginTop: spacing.xl, gap: spacing.lg }}>
-          {benefits.map((benefit) => (
-            <View key={benefit.title} style={{ flexDirection: 'row', gap: spacing.md }}>
-              <Text variant="bodyStrong" tone="accent">
-                ✓
-              </Text>
-              <View style={{ flex: 1 }}>
-                <Text variant="bodyStrong">{t(benefit.title)}</Text>
-                <Text variant="caption" tone="muted" style={{ marginTop: 2 }}>
-                  {t(benefit.desc)}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        <View style={{ marginTop: spacing['2xl'] }}>
+        <View style={{ marginTop: spacing.lg }}>
           {lifetime ? (
             <Button
               label={price ? t('lifetimeAccess', { price }) : t('lifetimeAccessPlain')}
@@ -141,6 +124,39 @@ export default function Paywall() {
           )}
           <Text variant="caption" tone="muted" align="center" style={{ marginTop: spacing.md }}>
             {t('oneTimePayment')}
+          </Text>
+        </View>
+
+        {/* A ruled list rather than ticks: each line is a claim about what the
+            purchase changes, and the rule ties them to one another instead of
+            reading as a checklist of features. */}
+        <View style={{ marginTop: spacing['2xl'], gap: spacing.base }}>
+          {benefits.map((benefit) => (
+            <View
+              key={benefit.title}
+              style={{
+                borderLeftWidth: 2,
+                borderLeftColor: colors.accent,
+                paddingLeft: spacing.base,
+              }}
+            >
+              <Text variant="bodyStrong">{t(benefit.title)}</Text>
+              <Text variant="caption" tone="muted" style={{ marginTop: 2 }}>
+                {t(benefit.desc)}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={{ marginTop: spacing['2xl'], gap: 2 }}>
+          <Text variant="micro" tone="accent" align="center">
+            {t('antiSubTitle')}
+          </Text>
+          {/* Its own Text node, not interpolated into the line above: the
+              no-subscription promise is a claim the store holds us to, and a
+              test asserts it is present and findable. */}
+          <Text variant="caption" tone="muted" align="center">
+            {t('antiSubHeadline')}
           </Text>
         </View>
 
