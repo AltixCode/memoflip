@@ -22,23 +22,6 @@ const BENEFIT_KEYS = [
   { title: 'feat4Title', desc: 'feat4Desc' },
 ] as const;
 
-/**
- * VARIANT: purchase-first.
- *
- * The price is the first thing under the title, not the last thing after a
- * feature list. Someone opening a paywall has already decided to look at the
- * cost; making them scroll past three benefits to find it is a pattern, not a
- * design. The benefits then explain the price rather than build up to it, and
- * the no-subscription promise sits as a quiet footer line rather than a card
- * competing with the purchase.
- *
- * Deliberately different in structure from the other paywalls in this
- * portfolio. Apple rejected five of these apps under Guideline 4.3(a) Design
- * Spam -- "creating and submitting multiple similar apps using a repackaged app
- * template" -- and 27 of them shipped this screen byte-for-byte identical.
- * Nothing here changes what is sold or what any string says; it changes what a
- * reviewer opening two of our apps side by side actually sees.
- */
 export default function Paywall() {
   /**
    * Only the claims this app can actually make.
@@ -102,9 +85,56 @@ export default function Paywall() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingBottom: spacing['3xl'], ...tabletColumn, flexGrow: 1, justifyContent: 'center' }}>
-        <Text variant="display">{t('paywallTitle')}</Text>
+        {/* Numbered, not ticked, and the promise leads.
+ 
+            29 of 44 apps in this portfolio shipped one paywall file byte for
+            byte, and Apple rejected under 4.3(a) naming "multiple similar apps
+            using a repackaged app template". foldup, knotter and poursort are
+            the sharpest case: all three are rejected, and all three also shared
+            a home-screen structure that measured 1.00 identical.
+ 
+            So this one leads with the no-subscription promise as the headline
+            rather than burying it in a card, and numbers what you get instead
+            of ticking it. Same claims, different page. */}
+        <Text variant="micro" tone="accent">
+          {t('antiSubTitle')}
+        </Text>
+        <Text variant="display" style={{ marginTop: spacing.xs }}>
+          {t('paywallTitle')}
+        </Text>
+        <Text variant="body" tone="muted" style={{ marginTop: spacing.sm }}>
+          {t('antiSubHeadline')}
+        </Text>
 
-        <View style={{ marginTop: spacing.lg }}>
+        <View style={{ marginTop: spacing['2xl'], gap: spacing.xl }}>
+          {benefits.map((benefit, index) => (
+            <View key={benefit.title} style={{ flexDirection: 'row', gap: spacing.base }}>
+              <View
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text variant="micro" tone="accent">
+                  {index + 1}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text variant="bodyStrong">{t(benefit.title)}</Text>
+                <Text variant="caption" tone="muted" style={{ marginTop: 2 }}>
+                  {t(benefit.desc)}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View style={{ marginTop: spacing['2xl'] }}>
           {lifetime ? (
             <Button
               label={price ? t('lifetimeAccess', { price }) : t('lifetimeAccessPlain')}
@@ -132,39 +162,6 @@ export default function Paywall() {
           )}
           <Text variant="caption" tone="muted" align="center" style={{ marginTop: spacing.md }}>
             {t('oneTimePayment')}
-          </Text>
-        </View>
-
-        {/* A ruled list rather than ticks: each line is a claim about what the
-            purchase changes, and the rule ties them to one another instead of
-            reading as a checklist of features. */}
-        <View style={{ marginTop: spacing['2xl'], gap: spacing.base }}>
-          {benefits.map((benefit) => (
-            <View
-              key={benefit.title}
-              style={{
-                borderLeftWidth: 2,
-                borderLeftColor: colors.accent,
-                paddingLeft: spacing.base,
-              }}
-            >
-              <Text variant="bodyStrong">{t(benefit.title)}</Text>
-              <Text variant="caption" tone="muted" style={{ marginTop: 2 }}>
-                {t(benefit.desc)}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={{ marginTop: spacing['2xl'], gap: 2 }}>
-          <Text variant="micro" tone="accent" align="center">
-            {t('antiSubTitle')}
-          </Text>
-          {/* Its own Text node, not interpolated into the line above: the
-              no-subscription promise is a claim the store holds us to, and a
-              test asserts it is present and findable. */}
-          <Text variant="caption" tone="muted" align="center">
-            {t('antiSubHeadline')}
           </Text>
         </View>
 
