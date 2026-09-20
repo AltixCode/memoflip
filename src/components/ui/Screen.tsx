@@ -72,7 +72,7 @@ export function Screen({
     // navigation header already sits in the notch, so adding it there would
     // push the content down twice; without a header the first line of text
     // renders *under* the status bar, which is what this fixes.
-    paddingTop: topInset ? insets.top : 0,
+    paddingTop: topInset ? Math.max(insets.top, 54) + spacing.xs : 0,
     paddingBottom: insets.bottom + bottomInset + spacing.xl,
   };
 

@@ -70,21 +70,8 @@ export default function Home() {
     return () => clearTimeout(id);
   }, [faceUp, resolveTurn]);
 
-  useEffect(() => {
-    if (!game || announced.current || !isComplete(game)) return;
-    announced.current = true;
-    const ms = startedAt ? Date.now() - startedAt : elapsed;
-    const key = `${deck}:${size}`;
-    const previous = bests[key];
-    finish(ms);
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert(
-      t("wonTitle"),
-      `${t("wonBody", { time: formatMs(ms), moves: String(game.moves) })}${
-        previous === undefined || ms < previous ? `\n${t("newBest")}` : ""
-      }`,
-    );
-  }, [game, startedAt, elapsed, deck, size, bests, finish]);
+  const currentLevelIndex = GRID_SIZES.indexOf(size);
+  const currentLevelNumber = currentLevelIndex >= 0 ? currentLevelIndex + 1 : 1;
 
   const begin = useCallback(
     (nextSize: GridSize, nextDeck: string) => {
@@ -101,6 +88,32 @@ export default function Home() {
     },
     [start, isPremium, router],
   );
+
+  const nextLevel = useCallback(() => {
+    const nextIdx = (currentLevelIndex + 1) % GRID_SIZES.length;
+    const nextSize = GRID_SIZES[nextIdx]!;
+    begin(nextSize, deck);
+  }, [currentLevelIndex, begin, deck]);
+
+  useEffect(() => {
+    if (!game || announced.current || !isComplete(game)) return;
+    announced.current = true;
+    const ms = startedAt ? Date.now() - startedAt : elapsed;
+    const key = `${deck}:${size}`;
+    const previous = bests[key];
+    finish(ms);
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert(
+      t("wonTitle"),
+      `${t("wonBody", { time: formatMs(ms), moves: String(game.moves) })}${
+        previous === undefined || ms < previous ? `\n${t("newBest")}` : ""
+      }`,
+      [
+        { text: t("restartCta"), onPress: () => begin(size, deck) },
+        { text: t("nextLevelCta"), onPress: nextLevel },
+      ],
+    );
+  }, [game, startedAt, elapsed, deck, size, bests, finish, nextLevel, begin]);
 
   const columns = game ? columnsFor(game.size) : 4;
   const board = game?.board ?? [];
@@ -120,7 +133,7 @@ export default function Home() {
           navigation header above it, nothing else pays the notch, and the
           title renders underneath the status bar. */}
       <Screen scroll topInset>
-        <View style={styles.titleRow}>
+        <View style={[styles.titleRow, { marginTop: spacing.xs }]}>
           <View style={{ flex: 1 }}>
             <Text variant="display">{t("appName")}</Text>
             <Text variant="caption" tone="muted">
@@ -139,8 +152,11 @@ export default function Home() {
         {game ? (
           <>
             <View
-              style={[styles.row, { gap: spacing.lg, marginTop: spacing.md }]}
+              style={[styles.row, { gap: spacing.md, marginTop: spacing.md, flexWrap: "wrap" }]}
             >
+              <Text variant="bodyStrong" tone="accent">
+                {t("levelLabel", { n: String(currentLevelNumber) })}
+              </Text>
               <Text
                 variant="caption"
                 tone="muted"
@@ -213,13 +229,20 @@ export default function Home() {
               })}
             </View>
 
-            <Button
-              label={t("restartCta")}
-              variant="secondary"
-              fullWidth
-              onPress={() => begin(size, deck)}
-              style={{ marginTop: spacing.lg }}
-            />
+            <View style={[styles.row, { gap: spacing.sm, marginTop: spacing.lg }]}>
+              <Button
+                label={t("restartCta")}
+                variant="secondary"
+                style={{ flex: 1 }}
+                onPress={() => begin(size, deck)}
+              />
+              <Button
+                label={t("nextLevelCta")}
+                variant="primary"
+                style={{ flex: 1 }}
+                onPress={nextLevel}
+              />
+            </View>
           </>
         ) : null}
 

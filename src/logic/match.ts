@@ -67,9 +67,11 @@ export function dealBoard(
   rng: Rng = Math.random,
 ): Card[] {
   const pairs = cardsFor(size) / 2;
+  const unique = Array.from(new Set(symbols));
+  const pool = unique.length >= pairs ? shuffle(unique, rng) : unique;
   const chosen = Array.from(
     { length: pairs },
-    (_, i) => symbols[i % symbols.length]!,
+    (_, i) => pool[i % pool.length]!,
   );
   const doubled = chosen.flatMap((symbol) => [symbol, symbol]);
   return shuffle(doubled, rng).map((symbol, id) => ({
