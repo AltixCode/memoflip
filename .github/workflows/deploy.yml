@@ -573,13 +573,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/gradle-home"
           export GRADLE_USER_HOME="$RUNNER_TEMP/gradle-home"
           echo "Building Release APK..."
-          ./gradlew assembleRelease --stacktrace --no-daemon --max-workers=2 -Porg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=512m" -Dkotlin.compiler.execution.strategy=in-process \
+          ./gradlew assembleRelease --stacktrace --no-daemon --max-workers=2 -Porg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=1536m" -Dkotlin.compiler.execution.strategy=in-process \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
             "-Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD" \
             "-Pandroid.injected.signing.key.alias=$KEY_ALIAS" \
             "-Pandroid.injected.signing.key.password=$KEY_PASSWORD"
           echo "Building Release AAB Bundle..."
-          ./gradlew bundleRelease --stacktrace --no-daemon --max-workers=2 -Porg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=512m" -Dkotlin.compiler.execution.strategy=in-process \
+          ./gradlew bundleRelease --stacktrace --no-daemon --max-workers=2 -Porg.gradle.parallel=false -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=1536m" -Dkotlin.compiler.execution.strategy=in-process \
             "-Pandroid.injected.signing.store.file=$KEYSTORE_PATH" \
             "-Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD" \
             "-Pandroid.injected.signing.key.alias=$KEY_ALIAS" \
