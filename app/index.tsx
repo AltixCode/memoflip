@@ -25,8 +25,13 @@ import { usePremiumStore } from "@/store/usePremiumStore";
 import { useTheme } from "@/theme";
 
 const MIN_TOUCH_TARGET = 44;
-/** How long a mismatched pair stays visible before turning back. */
-const PEEK_MS = 900;
+/**
+ * How long a mismatched pair stays visible before turning back on its own. A tester found
+ * this sluggish; it is now just long enough to register the pair rather than a full pause,
+ * and tapping a third card (see `flip` in `src/logic/match.ts`) settles the pair immediately
+ * without waiting this out at all — this timer only fires for a player who does not tap again.
+ */
+const PEEK_MS = 550;
 
 /** Mm:ss from milliseconds. */
 function formatMs(ms: number): string {
@@ -123,7 +128,11 @@ export default function Home() {
   // height term keeps a square board from crowding the stats row out on a short
   // window now that the cap is larger.
   const isTablet = width >= 700;
-  const boardWidth = Math.min(width - spacing.xl * 2, height * 0.55, isTablet ? 720 : 480);
+  const boardWidth = Math.min(
+    width - spacing.xl * 2,
+    height * 0.55,
+    isTablet ? 720 : 480,
+  );
   const cell = (boardWidth - gap * (columns - 1)) / columns;
   const bestForCurrent = bests[`${deck}:${size}`];
 
@@ -152,7 +161,10 @@ export default function Home() {
         {game ? (
           <>
             <View
-              style={[styles.row, { gap: spacing.md, marginTop: spacing.md, flexWrap: "wrap" }]}
+              style={[
+                styles.row,
+                { gap: spacing.md, marginTop: spacing.md, flexWrap: "wrap" },
+              ]}
             >
               <Text variant="bodyStrong" tone="accent">
                 {t("levelLabel", { n: String(currentLevelNumber) })}
@@ -229,7 +241,9 @@ export default function Home() {
               })}
             </View>
 
-            <View style={[styles.row, { gap: spacing.sm, marginTop: spacing.lg }]}>
+            <View
+              style={[styles.row, { gap: spacing.sm, marginTop: spacing.lg }]}
+            >
               <Button
                 label={t("restartCta")}
                 variant="secondary"

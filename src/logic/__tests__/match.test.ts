@@ -8,6 +8,7 @@ import {
   newGame,
   resolve,
 } from "../match";
+import { DECKS } from "../decks";
 
 /** Deterministic shuffle source. */
 const seq = (values: number[]) => {
@@ -73,6 +74,24 @@ describe("dealBoard", () => {
       counts.set(card.symbol, (counts.get(card.symbol) ?? 0) + 1);
     expect([...counts.values()].every((n) => n % 2 === 0)).toBe(true);
   });
+
+  // A tester reported seeing "more than two of the same shape" on a real board. Every real
+  // deck has at least as many unique symbols as the largest board needs pairs, so — unlike the
+  // short-deck case above — every symbol on a real board must appear in *exactly* two cards,
+  // never more. This is the invariant a memory-match board can never break.
+  describe.each(DECKS)("with the real $id deck", (deck) => {
+    it.each(GRID_SIZES)(
+      "deals %s with every symbol appearing exactly twice",
+      (size) => {
+        const board = dealBoard(size, deck.symbols, Math.random);
+        expect(board).toHaveLength(cardsFor(size));
+        const counts = new Map<string, number>();
+        for (const card of board)
+          counts.set(card.symbol, (counts.get(card.symbol) ?? 0) + 1);
+        expect([...counts.values()].every((n) => n === 2)).toBe(true);
+      },
+    );
+  });
 });
 
 describe("flip", () => {
@@ -100,8 +119,10 @@ describe("flip", () => {
     expect(flip(state, 0).board[0]!.faceUp).toBe(false);
   });
 
-  it("refuses a third card while two are still face up", () => {
-    // The two unresolved cards must be seen before anything else turns over.
+  it("settles a still-showing mismatched pair immediately instead of blocking the next tap", () => {
+    // A tester reported this as "can't open another card until the last one closes, too
+    // slow" — waiting out PEEK_MS was the only way to see a third card. A tap now settles
+    // the pending pair itself rather than making the player wait for a timer.
     const state = start();
     const first = state.board.findIndex(
       (c) => c.symbol === state.board[0]!.symbol,
@@ -112,7 +133,59 @@ describe("flip", () => {
     let next = flip(state, first);
     next = flip(next, other);
     const third = next.board.findIndex((c) => !c.faceUp && !c.matched);
-    expect(flip(next, third).board[third]!.faceUp).toBe(false);
+    const settled = flip(next, third);
+
+    // The mismatched pair turned back face down...
+    expect(settled.board[first]!.faceUp).toBe(false);
+    expect(settled.board[other]!.faceUp).toBe(false);
+    // ...and the newly tapped card is up, not ignored.
+    expect(settled.board[third]!.faceUp).toBe(true);
+  });
+
+  it("settles a still-showing matched pair (marks it matched) before flipping the next tap", () => {
+    const state = start();
+    const first = 0;
+    const symbol = state.board[first]!.symbol;
+    const second = state.board.findIndex(
+      (c, i) => i !== first && c.symbol === symbol,
+    );
+    let next = flip(state, first);
+    next = flip(next, second);
+    const third = next.board.findIndex((c) => !c.faceUp && !c.matched);
+    const settled = flip(next, third);
+
+    expect(settled.board[first]!.matched).toBe(true);
+    expect(settled.board[second]!.matched).toBe(true);
+    expect(settled.board[third]!.faceUp).toBe(true);
+  });
+
+  it("still refuses a fourth tap once settling leaves two new cards face up", () => {
+    // Settling a stale pair on a tap must not let the *new* pair run past two-up either —
+    // the same "see it before the next one turns over" rule still applies going forward.
+    const state = start();
+    const first = state.board.findIndex(
+      (c) => c.symbol === state.board[0]!.symbol,
+    );
+    const other = state.board.findIndex(
+      (c, i) => i !== first && c.symbol !== state.board[0]!.symbol,
+    );
+    let next = flip(flip(state, first), other);
+    const third = next.board.findIndex((c) => !c.faceUp && !c.matched);
+    next = flip(next, third); // settles first pair, flips third
+    const fourth = next.board.findIndex(
+      (c, i) => i !== third && !c.faceUp && !c.matched,
+    );
+    next = flip(next, fourth); // third + fourth now the pending pair
+    const fifth = next.board.findIndex(
+      (c, i) => i !== third && i !== fourth && !c.faceUp && !c.matched,
+    );
+    const stillPending = flip(next, fifth);
+    // Settling third+fourth on this tap should flip `fifth` up — it must not also flip a
+    // sixth card in the same call.
+    const faceUpUnmatchedCount = stillPending.board.filter(
+      (c) => c.faceUp && !c.matched,
+    ).length;
+    expect(faceUpUnmatchedCount).toBeLessThanOrEqual(2);
   });
 
   it("ignores an index that is not on the board", () => {

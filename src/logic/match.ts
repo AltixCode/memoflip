@@ -6,11 +6,15 @@
  *
  * A turn is two flips. The rules that matter, and that a naive implementation gets wrong:
  * the same card cannot be flipped twice (it would match itself), an already-matched card
- * cannot be flipped at all, and a **third** card cannot turn over while two unresolved ones
- * are still face up — the player has to be able to see what they revealed.
+ * cannot be flipped at all, and flipping a **third** card while two unresolved ones are still
+ * face up settles that pending pair first (see `flip`) rather than being ignored or forcing
+ * the player to wait out a timer.
  */
 
-export const GRID_SIZES = ["4x4", "4x6", "6x6", "8x8"] as const;
+// Graduated difficulty, smallest first — a level is just an index into this list, so adding
+// one is a data change (columns × rows must stay even, and its pair count must stay within
+// every deck's symbol count; see decks.ts) rather than a code change.
+export const GRID_SIZES = ["4x4", "4x6", "6x6", "6x8", "8x8"] as const;
 export type GridSize = (typeof GRID_SIZES)[number];
 
 export interface Card {
@@ -98,23 +102,30 @@ const faceUpUnmatched = (board: Card[]): Card[] =>
  *
  * Returns the state unchanged for every illegal flip rather than throwing: the screen calls
  * this straight from a press handler, and an exception there is a crash on a mistap.
+ *
+ * A tester reported that the game felt "too slow" because a third tap did nothing at all
+ * until a fixed timer settled the pending pair. Waiting out a timer to see the *next* pair is
+ * not the same as waiting to see *this* one, so a tap now settles a still-showing pair itself
+ * (matching or not — `resolve` decides which) before turning the tapped card over. The
+ * on-screen timer in the caller is only a fallback for a player who does not tap again.
  */
 export function flip(state: GameState, index: number): GameState {
   const card = state.board[index];
   if (!card) return state;
   if (card.faceUp || card.matched) return state;
-  // Two already showing and unresolved: the player has to see them first.
-  if (faceUpUnmatched(state.board).length >= 2) return state;
 
-  const board = state.board.map((c, i) =>
+  const pending =
+    faceUpUnmatched(state.board).length >= 2 ? resolve(state) : state;
+
+  const board = pending.board.map((c, i) =>
     i === index ? { ...c, faceUp: true } : c,
   );
   const nowUp = faceUpUnmatched(board).length;
   return {
-    ...state,
+    ...pending,
     board,
     // A move is a completed turn, so it counts on the second card, not the first.
-    moves: nowUp === 2 ? state.moves + 1 : state.moves,
+    moves: nowUp === 2 ? pending.moves + 1 : pending.moves,
   };
 }
 
